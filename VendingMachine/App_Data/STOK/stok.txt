@@ -1,0 +1,1 @@
+[{"barang_nama":"Biskuit","barang_stok":98},{"barang_nama":"Oreo","barang_stok":97},{"barang_nama":"Tango","barang_stok":99},{"barang_nama":"Chips","barang_stok":99},{"barang_nama":"Coklat","barang_stok":100}]

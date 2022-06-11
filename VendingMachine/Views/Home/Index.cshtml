@@ -1,0 +1,175 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="row">
+    <section class="col-lg-6">
+        <div class="card bg-gradient-success">
+            <div class="card-header border-1">
+                <h4 class="card-title">
+                    Form Input Belanja
+                </h4>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body pt-0">
+
+                <div class="form-group row mb-1">
+                    <label class="col-sm-3 control-label">Jenis Makanan</label>
+                    <div class="col-sm-5">
+                        @Html.DropDownList("listMakanan", (SelectList)ViewData["listMakanan"], new { @id = "txtjenismakanan", @class = "form-control form-control-sm select2DDList" })
+                    </div>
+                </div>
+                <div class="form-group row mb-1">
+                    <label class="col-sm-3 control-label">Petty Cash 1</label>
+                    <div class="col-sm-5">
+                        @Html.DropDownList("txtcashbuyer", (SelectList)ViewData["AcceptMoney"], new { @id = "txtcashbuyer", @class = "form-control form-control-sm select2DDList" })
+                    </div>
+                </div>
+                <div class="form-group row mb-1">
+                    <label class="col-sm-3 control-label">Petty Cash 2</label>
+                    <div class="col-sm-5">
+                        @Html.DropDownList("acceptmoney2", (SelectList)ViewData["AcceptMoney"], new { @id = "acceptmoney2", @class = "form-control form-control-sm select2DDList" })
+                    </div>
+                </div>
+                <div class="form-group row mb-1">
+                    <div class="col-sm-3"></div>
+                    <div class="col-sm-5">
+                        <div class="text-right">
+                            <input id="btnBeli" type="button" value="Beli" class="btn btn-primary btn-sm">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.card-body -->
+        </div>
+    </section>
+
+    <section class="col-lg-6 col-md-6 col-xs-12 col-sm-6 pull-right">
+        <div class="card bg-gradient-success">
+            <div class="card-header border-0">
+                <h4 class="card-title">
+                    <div class="text-center"> list Jenis Produk
+                    
+                    </div>
+                       
+                </h4>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body pt-0">
+                <table id="tablemakanan" class="display nowrap" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Price</th>
+                            <th>Stok</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <!-- /.card-body -->
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script type="text/javascript" src="~/Scripts/jquery-ui.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="~/Content/Select2/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/sweetalert.min.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $(".select2DDList").select2({
+                width: "100%",
+                theme:"classic"
+            });
+
+            RefreshTable();
+
+            $("#btnremovetag").click(function () {
+                document.getElementById("embedheader").innerHTML = "&nbsp;";
+            })
+
+            $("#btnsubmit").click(function () {
+
+            });
+
+            $("#btnBeli").click(function(){
+                var namabarang = $("#txtjenismakanan").val();
+                var hargabarang = $("#txtcashbuyer").val();
+                if ((!namabarang.trim()) || (!hargabarang.trim())) {
+                    Msgbox("Warning","Mohon lengkapi kolom!","warning","Close This")
+                    return false;
+                }
+
+                var a = parseInt($("#txtcashbuyer").val());
+                var b = parseInt($("#acceptmoney2").val());
+                var sum = a + b
+                var sendData = {
+                    price: sum,
+                    nama: $("#txtjenismakanan").val(),
+                    stok:0
+                }
+                  $.ajax({
+                    url: '@Url.Action("BeliMakanan", "Home")',
+                    type: 'post',
+                    data: JSON.stringify(sendData),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (x, textStatus, jQxhr) {
+                        if (x.error_success === "success") {
+                            Msgbox(x.title, x.text, x.error_success, x.button);
+                            RefreshTable();
+                        } else {
+                            Msgbox(x.title, x.text, x.error_success, x.button);
+                        }
+                    },
+                    error: function (jqXhr, textStatus, errorThrown) {
+                        console.log(errorThrown);
+                    }
+                });
+            });
+
+
+        });// doc Ready
+
+        function Msgbox(titlex,text_,error_or_success,button_text_) {
+            swal({
+                title: titlex,
+                text: text_,
+                icon: error_or_success,
+                button: button_text_,
+            });
+        }
+
+        function RefreshTable() {
+             $.ajax({
+                    url: '@Url.Action("GetData", "Home")',
+                    type: 'post',
+                    contentType: "application/json; charset=utf-8",
+                    success: function (x, textStatus, jQxhr) {
+                        ParsingToDataTable(x);
+                    },
+                    error: function (jqXhr, textStatus, errorThrown) {
+                        console.log(errorThrown);
+                    }
+                });
+        }
+
+        function ParsingToDataTable(data) {
+            $('#tablemakanan').DataTable({
+                bDestroy:true,
+                responsive: true,
+                data: data,
+                "columns": [
+                    { "data": "nama" },
+                    { "data": "price" },
+                    { "data": "stok" }
+                ],
+                "select": {"style":"os"}
+            });
+        }
+
+    </script>
+
+}
